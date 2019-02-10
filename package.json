@@ -1,0 +1,34 @@
+{
+  "name": "mustachewax",
+  "version": "1.0.0",
+  "description": "helper functions for Mustache",
+  "main": "mustacheWax.js",
+  "dependencies": {
+    "fs": "0.0.1-security",
+    "fs-extra": "^7.0.1",
+    "js-yaml": "^3.5.3",
+    "json-pointer": "^0.6.0",
+    "jsonpath": "^1.0.0",
+    "lodash": "^4.5.0",
+    "mustache": "^3.0.1",
+    "pluralize": "^1.0.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/anshumandas/mustacheWax.git"
+  },
+  "keywords": [
+    "Mustache",
+    "helper",
+    "functions"
+  ],
+  "author": "Anshuman Das",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/anshumandas/mustacheWax/issues"
+  },
+  "homepage": "https://github.com/anshumandas/mustacheWax#readme"
+}
