@@ -1,5 +1,5 @@
 {
-  "name": "mustachewax",
+  "name": "my-mustache-wax",
   "version": "1.0.0",
   "description": "helper functions for Mustache",
   "main": "mustacheWax.js",
