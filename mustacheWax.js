@@ -34,7 +34,6 @@ exports.indexedList = function indexedList(list) {
 }
 
 exports.addFunctions = function addFunctions(inputs) {
-
   addBespokeFuncs(inputs);
 
   inputs['__removeTrailingComma'] = function () {
@@ -61,12 +60,9 @@ function addLodashFuncs(inputs, array) {
 
 function addBespokeFuncs(inputs) {
   _.forEach(bespoke, function(value, key) {
-    inputs['__'+key] = function () {
-      return function (text, render) {
-        return value(render(text));
-      };
-    };
-  })
+    console.log(value);
+    inputs['__'+key] = value;
+  });
 }
 
 exports.handleArrayOfArrays = function handleArrayOfArrays(arrayOfArrays, level = 0){
