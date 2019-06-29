@@ -60,12 +60,12 @@ function addLodashFuncs(inputs, array) {
 
 function addBespokeFuncs(inputs) {
   _.forEach(bespoke, function(value, key) {
-    console.log(value);
     inputs['__'+key] = value;
   });
 }
 
 exports.handleArrayOfArrays = function handleArrayOfArrays(arrayOfArrays, level = 0){
+  if(!arrayOfArrays) return null;
   let r = [];
   for (var i = 0; i < arrayOfArrays.length; i++) {
     if(_.isArray(arrayOfArrays[i])) {
