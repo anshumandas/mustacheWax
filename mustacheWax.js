@@ -9,6 +9,14 @@ exports.addBespokeFunction = function addBespoke(key, func) {
   bespoke[key] = func;
 }
 
+exports.list2boolObj = function list2boolObj(p) {
+  let r = {};
+  if(p) for (var i = 0; i < p.length; ) {
+    r[p[i++]] = true;
+  }
+  return r;
+}
+
 exports.objs2list = function objs2list(p) {
   let r = [];
   for (var key in p) if (p.hasOwnProperty(key)) {
