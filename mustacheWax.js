@@ -46,8 +46,8 @@ exports.addFunctions = function addFunctions(inputs) {
 
   inputs['__removeTrailingComma'] = function () {
     return function (text, render) {
-      let t = render(text);
-      return t.substring(0, t.lastIndexOf(','));
+      let t = render(text).trim();
+      return (t.endsWith(',')) ? t.substring(0, t.length - 1) : t;
     };
   };
 
@@ -68,7 +68,7 @@ function addLodashFuncs(inputs, array) {
 
 function addBespokeFuncs(inputs) {
   _.forEach(bespoke, function(value, key) {
-    console.log(value);
+    // console.log(value);
     inputs['__'+key] = value;
   });
 }
