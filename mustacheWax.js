@@ -3,7 +3,52 @@
 const _ = require('lodash');
 const fs = require('fs');
 
-var bespoke = {}
+var bespoke = {};
+
+function addLodashObjectFunc(inputs, fNames, params) {
+  _.forEach(fNames, function(fName) {
+      _.forEach(params, function(key) {
+        inputs['__'+fName+_.upperFirst(key)] = function () {
+          return function (text, render) {
+            let t = render(text);
+            let r = JSON.parse(t);
+            r = _[fName](r, [key]);
+            return JSON.stringify(r);
+          };
+        };
+      });
+  });
+}
+
+function addLodashStringFuncs(inputs, array) {
+  _.forEach(array, function(key) {
+    inputs['__'+key] = function () {
+      return function (text, render) {
+        return _[key](render(text));
+      };
+    };
+  });
+}
+
+function addLodashArrayFuncs(inputs, array) {
+  _.forEach(array, function(key) {
+    inputs['__'+key] = function () {
+      return function (text, render) {
+        let t = render(text);
+        let r = JSON.parse(t);
+        r = _[key](r);
+        return JSON.stringify(r);
+      };
+    };
+  });
+}
+
+function addBespokeFuncs(inputs) {
+  _.forEach(bespoke, function(value, key) {
+    // console.log(value);
+    inputs['__'+key] = value;
+  });
+}
 
 exports.addBespokeFunction = function addBespoke(key, func) {
   bespoke[key] = func;
@@ -41,37 +86,26 @@ exports.indexedList = function indexedList(list) {
   return r;
 }
 
+function removeTrailingComma() {
+  return function (text, render) {
+    let t = render(text).trim();
+    return (t.endsWith(',')) ? t.substring(0, t.length - 1) : t;
+  };
+};
+
 exports.addFunctions = function addFunctions(inputs) {
   addBespokeFuncs(inputs);
 
-  inputs['__removeTrailingComma'] = function () {
-    return function (text, render) {
-      let t = render(text).trim();
-      return (t.endsWith(',')) ? t.substring(0, t.length - 1) : t;
-    };
-  };
+  inputs['__removeTrailingComma'] = removeTrailingComma;
 
-  addLodashFuncs(inputs, ['camelCase', 'kebabCase', 'lowerCase', 'snakeCase', 'startCase', 'upperCase', 'toUpper', 'upperFirst', 'toLower', 'lowerFirst', 'capitalize', 'deburr', 'escape', 'trim']);
+  addLodashObjectFunc(inputs, ['sortBy', 'unionBy'], ['name']);
+  addLodashArrayFuncs(inputs, ['uniq']);
+  addLodashStringFuncs(inputs, ['camelCase', 'kebabCase', 'lowerCase', 'snakeCase', 'startCase', 'upperCase', 'toUpper', 'upperFirst', 'toLower', 'lowerFirst', 'capitalize', 'deburr', 'escape', 'trim']);
 
   return inputs;
 }
 
-function addLodashFuncs(inputs, array) {
-  _.forEach(array, function(key) {
-    inputs['__'+key] = function () {
-      return function (text, render) {
-        return _[key](render(text));
-      };
-    };
-  })
-}
-
-function addBespokeFuncs(inputs) {
-  _.forEach(bespoke, function(value, key) {
-    // console.log(value);
-    inputs['__'+key] = value;
-  });
-}
+exports.addLodashObjectFunc = addLodashObjectFunc;
 
 exports.handleArrayOfArrays = function handleArrayOfArrays(arrayOfArrays, level = 0){
   let r = [];

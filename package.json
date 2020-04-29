@@ -1,20 +1,18 @@
 {
   "name": "my-mustache-wax",
-  "version": "1.0.2",
+  "version": "1.0.5",
   "description": "helper functions for Mustache",
   "main": "mustacheWax.js",
   "dependencies": {
-    "fs": "0.0.1-security",
-    "fs-extra": "^7.0.1",
-    "js-yaml": "^3.5.3",
-    "json-pointer": "^0.6.0",
-    "jsonpath": "^1.0.0",
     "lodash": "^4.5.0",
-    "mustache": "^3.0.1",
-    "pluralize": "^1.0.0"
+    "fs": "0.0.1-security"
+  },
+  "devDependencies": {
+    "jest": "^25.2.7",
+    "mustache": "^3.0.1"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "repository": {
     "type": "git",
