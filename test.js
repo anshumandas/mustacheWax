@@ -26,7 +26,7 @@ describe('test lodash object functions while removing trailling comma', () => {
 });
 
 describe('test lodash array functions while removing trailling comma', () => {
-  it('sort by name', () => {
+  it('unique array', () => {
     let template = `Hello {{#__uniq}}[{{#__removeTrailingComma}}{{#people}}"{{.}}",{{/people}}{{/__removeTrailingComma}}]{{/__uniq}}`;
     expect(applyMustache(template, {'people': ['Bob', 'Alice', 'Bob']})).toEqual(`Hello ["Bob","Alice"]`);
   });
