@@ -31,3 +31,25 @@ describe('test lodash array functions while removing trailling comma', () => {
     expect(applyMustache(template, {'people': ['Bob', 'Alice', 'Bob']})).toEqual(`Hello ["Bob","Alice"]`);
   });
 });
+
+describe('test removing trailling semi colon', () => {
+  it('semi colon', () => {
+    let template = `Hello [{{#__removeTrailingSemiColon}}{{#people}}"{{.}}";{{/people}}{{/__removeTrailingSemiColon}}]`;
+    expect(applyMustache(template, {'people': ['Bob', 'Alice', 'Bob']})).toEqual(`Hello ["Bob";"Alice";"Bob"]`);
+  });
+});
+
+describe('test commalist function', () => {
+  it('comma delimited list', () => {
+    let model = {'people': ['Bob', 'Alice', 'Eve']};
+    model['people'] = MustacheHelper.commalist(model['people'], 'people')
+    let template = `Hello {{#people}}"{{people@val}}"{{#@comma}}, {{/@comma}}{{/people}}`;
+    expect(applyMustache(template, model)).toEqual(`Hello "Bob", "Alice", "Eve"`);
+  });
+  it('comma delimited list with name qualifier added to @comma', () => {
+    let model = {'people': ['Bob', 'Alice', 'Eve']};
+    model['people'] = MustacheHelper.commalist(model['people'], 'people', true)
+    let template = `Hello {{#people}}"{{people@val}}"{{#people@comma}}, {{/people@comma}}{{/people}}`;
+    expect(applyMustache(template, model)).toEqual(`Hello "Bob", "Alice", "Eve"`);
+  });
+});
