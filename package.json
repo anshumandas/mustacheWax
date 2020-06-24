@@ -1,17 +1,16 @@
 {
   "name": "my-mustache-wax",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "helper functions for Mustache. Also has an extraction library",
   "main": "helpers.js",
   "dependencies": {
-    "lodash": "^4.5.0"
-  },
-  "devDependencies": {
-    "jest": "^25.2.7",
+    "lodash": "^4.5.0",
     "mustache": "^3.0.1"
   },
+  "devDependencies": {
+    "jest": "^25.2.7"
+  },
   "scripts": {
-    "start": "node extract.js 'folder_name'",
     "test": "jest"
   },
   "repository": {

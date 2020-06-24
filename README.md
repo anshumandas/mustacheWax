@@ -23,13 +23,9 @@ The helper.js does the following:
   - commalist creates a list with a @comma property for all but the last item
   - indexedList introduces the @index property in a list
 
-The extract.js does the following (WIP):
-- Parses all .mustache files in a specified folder and its sub-folders
-- Creates a map of partials used
-- For each template, which is not a partial, creates an YAML file to outline the input model schema
+See the test.js file for usages.
 
-
-See the test.js file for usages
+In case you need to extract the mustache templates you can use mustache-extractor, which is another project here.
 
 # Install
 
