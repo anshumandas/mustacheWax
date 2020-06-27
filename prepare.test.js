@@ -2,13 +2,8 @@ const Mustache = require('mustache');
 const MustacheHelper = require('my-mustache-wax');
 
 function applyMustache(template, inputs){
-  let model = MustacheHelper.addFunctions(inputs);
   let partials = {};
-  return Mustache.render(template, model, partials);
-}
-
-function wax(template, inputs){
-  return applyMustache(template, MustacheHelper.addSuffixForBooleans(inputs));
+  return MustacheHelper.wax(Mustache, template, inputs, partials);
 }
 
 describe('test lodash case functions', () => {
@@ -72,14 +67,7 @@ describe('test removing trailling semi colon', () => {
 describe('test commalist function', () => {
   it('comma delimited list', () => {
     let model = {'people': ['Bob', 'Alice', 'Eve']};
-    model['people'] = MustacheHelper.commaList(model, 'people');
-    let template = `Hello {{#people}}"{{people@val}}"{{#@comma}}, {{/@comma}}{{/people}}`;
-    expect(applyMustache(template, model)).toEqual(`Hello "Bob", "Alice", "Eve"`);
-  });
-  it('comma delimited list with name qualifier added to @comma', () => {
-    let model = {'people': ['Bob', 'Alice', 'Eve']};
-    model['people'] = MustacheHelper.commaList(model, 'people', true);
-    let template = `Hello {{#people}}"{{people@val}}"{{#people@comma}}, {{/people@comma}}{{/people}}`;
+    let template = `Hello {{#people@commaList}}"{{people@val}}"{{#@comma}}, {{/@comma}}{{/people@commaList}}`;
     expect(applyMustache(template, model)).toEqual(`Hello "Bob", "Alice", "Eve"`);
   });
 });
@@ -87,9 +75,9 @@ describe('test commalist function', () => {
 describe('test question suffix', () => {
   let template = `Hello {{#__removeTrailingComma}}{{#unique?}}{{#__uniq}}{{#people}}"{{.}}",{{/people}}{{/__uniq}}{{/unique?}}{{^unique?}}{{#people}}"{{.}}",{{/people}}{{/unique?}}{{/__removeTrailingComma}}`;
   it('true case', () => {
-    expect(wax(template, {'people': ['Bob', 'Alice', 'Bob'], unique:true})).toEqual(`Hello "Bob","Alice"`);
+    expect(applyMustache(template, {'people': ['Bob', 'Alice', 'Bob'], unique:true})).toEqual(`Hello "Bob","Alice"`);
   });
-  it('false case', () => {
-    expect(wax(template, {'people': ['Bob', 'Alice', 'Bob'], unique:false})).toEqual(`Hello "Bob","Alice","Bob"`);
+  it('true case', () => {
+    expect(applyMustache(template, {'people': ['Bob', 'Alice', 'Bob'], unique:false})).toEqual(`Hello "Bob","Alice","Bob"`);
   });
 });

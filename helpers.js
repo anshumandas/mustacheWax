@@ -2,17 +2,38 @@
 
 const _ = require('lodash');
 
-var bespoke = {};
+var bespoke = {'removeTrailing': removeTrailing};
+
+function parseAndRebuild(t, fn, a, z, params) {
+  let p = t.startsWith(a);
+  let s = t.endsWith(z);
+  if(t.trim().endsWith(',')) t = t.trim().substring(0, t.length - 1);
+  let t2 = p ? t : a + t;
+  t2 = s ? t2 : t2 + z;
+  let space = t.includes(', ');
+  let r = null;
+  let quotes = true;
+  try {
+    r = JSON.parse(t2);
+  } catch (e) {
+    r = t.replace(/, /g, ',').split(",");
+    quotes = false;
+  }
+  r = params ? fn(r, params) : fn(r);
+  let o = JSON.stringify(r);
+  if(!p) o = o.substring(1);
+  if(!s) o = o.substring(0, o.length - 1);
+  if(!quotes) o = o.replace(/"/g, '');
+  if(space) o = o.replace(/,/g, ", ");
+  return o;
+}
 
 function addLodashObjectFuncs(inputs, fNames, params) {
   _.forEach(fNames, function(fName) {
       _.forEach(params, function(key) {
         inputs['__'+fName+_.upperFirst(key)] = function () {
           return function (text, render) {
-            let t = render(text);
-            let r = JSON.parse(t);
-            r = _[fName](r, [key]);
-            return JSON.stringify(r);
+            return parseAndRebuild(render(text), _[fName], '[', ']', [key]);
           };
         };
       });
@@ -33,10 +54,21 @@ function addLodashArrayFuncs(inputs, array) {
   _.forEach(array, function(key) {
     inputs['__'+key] = function () {
       return function (text, render) {
-        let t = render(text);
-        let r = JSON.parse(t);
-        r = _[key](r);
-        return JSON.stringify(r);
+        return parseAndRebuild(render(text), _[key], '[', ']');
+      };
+    };
+  });
+}
+
+function sortArray(array) {
+  return array.sort();
+}
+
+function addArrayFuncs(inputs, array) {
+  _.forEach(array, function(key) {
+    inputs['__'+key] = function () {
+      return function (text, render) {
+        return parseAndRebuild(render(text), sortArray, '[', ']');
       };
     };
   });
@@ -44,23 +76,14 @@ function addLodashArrayFuncs(inputs, array) {
 
 function addBespokeFuncs(inputs) {
   _.forEach(bespoke, function(value, key) {
-    // console.log(value);
-    inputs['__'+key] = value;
+    if(value.length == 1) inputs['__'+key] = value;
   });
 }
-
-function removeTrailing(delimiter) {
-  return function () {
-    return function (text, render) {
-      let t = render(text).trim();
-      return (t.endsWith(delimiter)) ? t.substring(0, t.length - 1) : t;
-    };
-  };
-};
 
 function addLodashFuncs(inputs) {
   addLodashObjectFuncs(inputs, ['sortBy', 'unionBy'], ['name']);
   addLodashArrayFuncs(inputs, ['uniq']);
+  addArrayFuncs(inputs, ['sort']);
   addLodashStringFuncs(inputs, ['camelCase', 'kebabCase', 'lowerCase', 'snakeCase', 'startCase', 'upperCase', 'toUpper', 'upperFirst', 'toLower', 'lowerFirst', 'capitalize', 'deburr', 'escape', 'trim']);
 }
 
@@ -68,12 +91,41 @@ exports.addBespokeFunction = function addBespoke(key, func) {
   bespoke[key] = func;
 }
 
+function removeTrailing(t, delimiter) {
+  return (t.endsWith(delimiter)) ? t.substring(0, t.length - 1) : t;
+}
+
+function call(args, preRender) {
+  return function () {
+    return function (text, render) {
+      let ret;
+      var fn = bespoke[args[0]];
+      if(preRender) {
+        args[0] = text;
+        ret = render(fn.apply(null, args));
+      } else {
+        let t = render(text).trim();
+        args[0] = t;
+        ret = fn.apply(null, args);
+      }
+      return ret;
+    };
+  };
+};
+
+function addParameterFunctions(inputs, array, preRender) {
+  _.forEach(array, function(key) {
+    let args = key.split('|');
+    inputs['__'+key] = call(args, preRender);
+  });
+}
+
 exports.addFunctions = function addFunctions(inputs) {
   addBespokeFuncs(inputs);
+  inputs['__removeTrailingComma'] = call(['removeTrailing', ',']);
+  inputs['__removeTrailingSemiColon'] = call(['removeTrailing', ';']);
 
-  inputs['__removeTrailingComma'] = removeTrailing(',');
-  inputs['__removeTrailingSemiColon'] = removeTrailing(';');
-
+  addParameterFunctions(inputs, ['removeTrailing|,']);
   addLodashFuncs(inputs);
 
   return inputs;
@@ -116,7 +168,8 @@ exports.objs2list = function objs2list(p, name) {
   return r;
 }
 
-exports.commalist = function commalist(p, name, nameComma) {
+exports.commaList = function commaList(inp, name, nameComma) {
+  let p = inp[name];
   let r = [];
   name = name || '';
   for (var i = 0; i < p.length; ) {
@@ -140,15 +193,61 @@ exports.indexedList = function indexedList(list, name) {
   return r;
 }
 
-exports.addIsPrefixForBoolean = function addIsPrefixForBoolean(inputs){
-  for (var variable in inputs) {
-    if (inputs.hasOwnProperty(variable)) {
-      if(_.isBoolean(inputs[variable])) {
-        inputs["is_"+variable] = inputs[variable];
-      } else if(_.isPlainObject(inputs[variable])) {
-        inputs[variable] = addIsPrefixForBoolean(inputs[variable]);
+function addSuffixForBoolean(inputs, variable){
+  inputs[variable+"?"] = inputs[variable];
+}
+
+exports.addSuffixForBooleans = function (inputs){
+  return traverse(inputs, {'bools': [addSuffixForBoolean]});
+}
+
+function traverse(inputs, fns){
+  let out = inputs;
+  if(_.isPlainObject(inputs)){
+    out = {};
+    for (var variable in inputs) {
+      if (inputs.hasOwnProperty(variable)) {
+        if(_.isString(inputs[variable])) {
+          out[variable] = inputs[variable];
+        } else if(_.isBoolean(inputs[variable])) {
+          out[variable] = inputs[variable];
+          if(fns['bools']) for (var fn of fns['bools']) {
+            fn(out, variable);
+          }
+        } else if(_.isPlainObject(inputs[variable])) {
+          out[variable] = traverse(inputs[variable]);
+        } else if(_.isArray(inputs[variable])) {
+          out[variable] = [];
+          for (var v of inputs[variable]) {
+            out[variable].push(traverse(v));
+          }
+          if(fns['lists']) for (var fn of fns['lists']) {
+            out[variable+"@"+fn.name] = fn(out, variable);
+          }
+        } else {
+          out[variable] = inputs[variable];
+        }
       }
     }
   }
-  return inputs;
+  return out;
+}
+
+exports.prepare = function prepare(inputs){
+  //add ? for booleans
+  //converts objects to arrays
+  let fns = {
+    'bools': [addSuffixForBoolean],
+    'lists': [exports.commaList]
+  };
+  let out = traverse(inputs, fns);
+  //adds functions
+  exports.addFunctions(out);
+  return out;
+}
+
+exports.wax = function wax(mustache, template, inputs, partials){
+  //TODO extract info from templates and use it to prepare the model
+  let model = exports.prepare(inputs);
+  return mustache.render(template, model, partials);
 }
