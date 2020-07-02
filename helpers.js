@@ -76,7 +76,7 @@ function addArrayFuncs(inputs, array) {
 
 function addBespokeFuncs(inputs) {
   _.forEach(bespoke, function(value, key) {
-    if(value.length == 1) inputs['__'+key] = value;
+    inputs['__'+key] = value;
   });
 }
 
@@ -100,13 +100,14 @@ function call(args, preRender) {
     return function (text, render) {
       let ret;
       var fn = bespoke[args[0]];
+      let params = _.clone(args);
       if(preRender) {
-        args[0] = text;
-        ret = render(fn.apply(null, args));
+        params[0] = text;
+        ret = render(fn.apply(null, params));
       } else {
         let t = render(text).trim();
-        args[0] = t;
-        ret = fn.apply(null, args);
+        params[0] = t;
+        ret = fn.apply(null, params);
       }
       return ret;
     };
