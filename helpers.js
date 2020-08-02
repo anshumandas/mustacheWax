@@ -87,7 +87,7 @@ function addLodashFuncs(inputs) {
   addLodashStringFuncs(inputs, ['camelCase', 'kebabCase', 'lowerCase', 'snakeCase', 'startCase', 'upperCase', 'toUpper', 'upperFirst', 'toLower', 'lowerFirst', 'capitalize', 'deburr', 'escape', 'trim']);
 }
 
-exports.addBespokeFunction = function addBespoke(key, func) {
+function addBespoke(key, func) {
   bespoke[key] = func;
 }
 
@@ -121,23 +121,19 @@ function addParameterFunctions(inputs, array, preRender) {
   });
 }
 
-exports.addFunctions = function addFunctions(inputs) {
+function addFunctions(inputs) {
   addBespokeFuncs(inputs);
   inputs['__removeTrailingComma'] = call(['removeTrailing', ',']);
   inputs['__removeTrailingSemiColon'] = call(['removeTrailing', ';']);
 
   addParameterFunctions(inputs, ['removeTrailing|,']);
+  addParameterFunctions(inputs, ['removeTrailing| && ']);
   addLodashFuncs(inputs);
 
   return inputs;
 }
 
-exports.addLodashFuncs = addLodashFuncs;
-exports.addLodashObjectFuncs = addLodashObjectFuncs;
-exports.addLodashArrayFuncs = addLodashArrayFuncs;
-exports.addLodashStringFuncs = addLodashStringFuncs;
-
-exports.handleArrayOfArrays = function handleArrayOfArrays(arrayOfArrays, name, level = 0){
+function handleArrayOfArrays(arrayOfArrays, name, level = 0){
   let r = [];
   name = name || '';
   for (var i = 0; i < arrayOfArrays.length; i++) {
@@ -157,7 +153,7 @@ exports.handleArrayOfArrays = function handleArrayOfArrays(arrayOfArrays, name, 
   return r;
 }
 
-exports.objs2list = function objs2list(p, name) {
+function objs2list(p, name) {
   let r = [];
   name = name || '';
   for (var key in p) if (p.hasOwnProperty(key)) {
@@ -169,7 +165,7 @@ exports.objs2list = function objs2list(p, name) {
   return r;
 }
 
-exports.commaList = function commaList(inp, name, nameComma) {
+function commaList(inp, name, nameComma) {
   let p = inp[name];
   let r = [];
   name = name || '';
@@ -182,7 +178,7 @@ exports.commaList = function commaList(inp, name, nameComma) {
   return r;
 }
 
-exports.indexedList = function indexedList(list, name) {
+function indexedList(list, name) {
   let r = [];
   name = name || '';
   for (var i = 0; i < list.length; i++) {
@@ -198,7 +194,7 @@ function addSuffixForBoolean(inputs, variable){
   inputs[variable+"?"] = inputs[variable];
 }
 
-exports.addSuffixForBooleans = function (inputs){
+function addSuffixForBooleans (inputs){
   return traverse(inputs, {'bools': [addSuffixForBoolean]});
 }
 
@@ -234,21 +230,38 @@ function traverse(inputs, fns){
   return out;
 }
 
-exports.prepare = function prepare(inputs){
+function prepare(inputs){
   //add ? for booleans
   //converts objects to arrays
   let fns = {
     'bools': [addSuffixForBoolean],
-    'lists': [exports.commaList]
+    'lists': [commaList]
   };
   let out = traverse(inputs, fns);
   //adds functions
-  exports.addFunctions(out);
+  addFunctions(out);
   return out;
 }
 
-exports.wax = function wax(mustache, template, inputs, partials){
+function wax(mustache, template, inputs, partials){
   //TODO extract info from templates and use it to prepare the model
-  let model = exports.prepare(inputs);
+  let model = prepare(inputs);
   return mustache.render(template, model, partials);
+}
+
+module.exports = {
+  wax,
+  prepare,
+  addSuffixForBooleans,
+  indexedList,
+  commaList,
+  objs2list,
+  addLodashFuncs,
+  addLodashObjectFuncs,
+  addLodashArrayFuncs,
+  addLodashStringFuncs,
+  handleArrayOfArrays,
+  addFunctions,
+  addParameterFunctions,
+  addBespokeFunction: addBespoke
 }
