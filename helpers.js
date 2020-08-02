@@ -92,7 +92,7 @@ function addBespoke(key, func) {
 }
 
 function removeTrailing(t, delimiter) {
-  return (t.endsWith(delimiter)) ? t.substring(0, t.length - 1) : t;
+  return ((t.endsWith(delimiter)) ? t.substring(0, t.length - delimiter.length) : t).trim();
 }
 
 function call(args, preRender) {
@@ -127,7 +127,7 @@ function addFunctions(inputs) {
   inputs['__removeTrailingSemiColon'] = call(['removeTrailing', ';']);
 
   addParameterFunctions(inputs, ['removeTrailing|,']);
-  addParameterFunctions(inputs, ['removeTrailing| && ']);
+  addParameterFunctions(inputs, ['removeTrailing|&&']);
   addLodashFuncs(inputs);
 
   return inputs;

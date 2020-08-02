@@ -1,6 +1,6 @@
 {
   "name": "my-mustache-wax",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "description": "helper functions for Mustache. Also has an extraction library",
   "main": "helpers.js",
   "dependencies": {

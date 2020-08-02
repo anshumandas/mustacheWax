@@ -69,6 +69,13 @@ describe('test removing trailling semi colon', () => {
   });
 });
 
+describe('test removing trailling &&', () => {
+  it('semi colon', () => {
+    let template = `Hello [{{#__removeTrailing|&&}}{{#people}}"{{.}}" && {{/people}}{{/__removeTrailing|&&}}]`;
+    expect(applyMustache(template, {'people': ['Bob', 'Alice', 'Bob']})).toEqual(`Hello ["Bob" && "Alice" && "Bob"]`);
+  });
+});
+
 describe('test commalist function', () => {
   it('comma delimited list', () => {
     let model = {'people': ['Bob', 'Alice', 'Eve']};
