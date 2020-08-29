@@ -11,6 +11,17 @@ function wax(template, inputs){
   return applyMustache(template, MustacheHelper.addSuffixForBooleans(inputs));
 }
 
+describe('test tensify functions', () => {
+  it('past_participle', () => {
+    let template = "{{#__past_participle}}{{verb}}{{/__past_participle}}";
+    expect(applyMustache(template, {'verb': 'follow'})).toEqual("followed");
+  });
+  it('past', () => {
+    let template = "{{#__past}}{{verb}}{{/__past}}";
+    expect(applyMustache(template, {'verb': 'favourite'})).toEqual("favourited");
+  });
+});
+
 describe('test lodash case functions', () => {
   it('upper first', () => {
     let template = "Hello {{#__upperFirst}}{{name}}{{/__upperFirst}}";

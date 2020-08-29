@@ -1,6 +1,7 @@
 'use strict';
 
 const _ = require('lodash');
+const tensify = require('tensify');
 
 var bespoke = {'removeTrailing': removeTrailing};
 
@@ -87,6 +88,16 @@ function addLodashFuncs(inputs) {
   addLodashStringFuncs(inputs, ['camelCase', 'kebabCase', 'lowerCase', 'snakeCase', 'startCase', 'upperCase', 'toUpper', 'upperFirst', 'toLower', 'lowerFirst', 'capitalize', 'deburr', 'escape', 'trim']);
 }
 
+function addTensifyFuncs(inputs) {
+  _.forEach(['past', 'past_participle'], function(key) {
+    inputs['__'+key] = function () {
+      return function (text, render) {
+        return tensify(render(text))[key];
+      };
+    };
+  });
+}
+
 function addBespoke(key, func) {
   bespoke[key] = func;
 }
@@ -129,6 +140,7 @@ function addFunctions(inputs) {
   addParameterFunctions(inputs, ['removeTrailing|,']);
   addParameterFunctions(inputs, ['removeTrailing|&&']);
   addLodashFuncs(inputs);
+  addTensifyFuncs(inputs);
 
   return inputs;
 }
@@ -263,5 +275,6 @@ module.exports = {
   handleArrayOfArrays,
   addFunctions,
   addParameterFunctions,
+  addTensifyFuncs,
   addBespokeFunction: addBespoke
 }
